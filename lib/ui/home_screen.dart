@@ -12,12 +12,14 @@ import 'package:flutter_baber_taolaymay/cloud_firestore/user_ref.dart';
 import 'package:flutter_baber_taolaymay/model/image_model.dart';
 import 'package:flutter_baber_taolaymay/model/user_model.dart';
 import 'package:flutter_baber_taolaymay/state/state_management.dart';
+import 'package:flutter_baber_taolaymay/view_model/home/home_view_model_imp.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 
 
 class HomePage extends ConsumerWidget{
+  final homeViewModel = HomeViewModelImp();
   @override
   Widget build(BuildContext context, watch) {
     return SafeArea(
@@ -28,7 +30,7 @@ class HomePage extends ConsumerWidget{
             child: Column(children: [
             //User Profile
             FutureBuilder(
-            future: getUserProfiles(context,FirebaseAuth.instance.currentUser.phoneNumber),
+            future: homeViewModel.displayUserProfile(context,FirebaseAuth.instance.currentUser.phoneNumber),
             builder: (context,snapshot){
               if(snapshot.connectionState == ConnectionState.waiting)
                 return Center(child: CircularProgressIndicator(),);
@@ -53,9 +55,7 @@ class HomePage extends ConsumerWidget{
                   ],
                     crossAxisAlignment: CrossAxisAlignment.start,
                   )),
-                    context
-                        .read(userInformation)
-                        .state.isStaff ?
+                    homeViewModel.isStaff(context) ?
                         IconButton(icon: Icon(Icons.admin_panel_settings,
                           color: Colors.white,),
                             onPressed: ()=>
@@ -105,7 +105,7 @@ class HomePage extends ConsumerWidget{
             ),),
             //Banner này à , uh
              FutureBuilder(
-                future: getBanners(),
+                future: homeViewModel.displayBanner(),
                 builder: (context,snapshot){
                   if(snapshot.connectionState == ConnectionState.waiting)
                     return Center(child: CircularProgressIndicator(),);
@@ -131,7 +131,7 @@ class HomePage extends ConsumerWidget{
                 Text('LOOKBOOK',style: GoogleFonts.robotoMono(fontSize: 24 , fontWeight: FontWeight.bold),)
               ],),),
               FutureBuilder(
-                  future: getLookbook(),
+                  future: homeViewModel.displayLookbook(),
                   builder: (context,snapshot){
                     if(snapshot.connectionState == ConnectionState.waiting)
                       return Center(child: CircularProgressIndicator(),);
