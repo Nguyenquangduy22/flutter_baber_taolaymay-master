@@ -1,8 +1,4 @@
 
-
-
-
-
 import 'package:chips_choice/chips_choice.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -17,7 +13,10 @@ import 'package:flutter_baber_taolaymay/model/booking_model.dart';
 import 'package:flutter_baber_taolaymay/model/service_model.dart';
 
 import 'package:flutter_baber_taolaymay/state/state_management.dart';
+import 'package:flutter_baber_taolaymay/string/strings.dart';
 import 'package:flutter_baber_taolaymay/utils/utils.dart';
+import 'package:flutter_baber_taolaymay/view_model/done_service/done_service_view_model.dart';
+import 'package:flutter_baber_taolaymay/view_model/done_service/done_service_view_model_imp.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,7 +25,9 @@ import 'package:intl/intl.dart';
 
 
 class DoneService extends ConsumerWidget{
-  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+  final doneServiceViewModel = DoneServiceViewModelImp();
+
   @override
   Widget build(BuildContext context, watch) {
     //When refresh , clear servicesSelected , boi vi Chip Choices not hold state
@@ -42,13 +43,13 @@ class DoneService extends ConsumerWidget{
               resizeToAvoidBottomInset: true,
               backgroundColor: Color(0xFFDFDFDF),
               appBar: AppBar(
-                title: Text('Done Services') ,
+                title: Text(doneServiceText) ,
                 backgroundColor: Color(0xFF383838),
               ),
               body: Column(children: [
                 Padding(padding: const EdgeInsets.all(8),child:
                   FutureBuilder(
-                    future: getDetailBooking(context,context.read(selectedTimeSlot).state),
+                    future: doneServiceViewModel.displayDetailBooking(context,context.read(selectedTimeSlot).state),
                     builder: (context,snapshot){
                       if (snapshot.connectionState == ConnectionState.waiting)
                         return Center(
@@ -83,11 +84,6 @@ class DoneService extends ConsumerWidget{
                                               fontSize: 15)
                                               ),
 
-
-
-
-
-
                                     ],
                                   )
                                 ],
@@ -99,9 +95,8 @@ class DoneService extends ConsumerWidget{
                                   children: [
                                   Consumer(builder: (context,watch,_){
                                     var servicesSelected = watch(selectedServices).state;
-                                    var totalPrice = servicesSelected.map((item) => item.price)
-                                    .fold(0, (value, element) => value + element);
-                                    return Text('Price ${context.read(selectedBooking).state.totalPrice == 0 ? totalPrice : context.read(selectedBooking).state.totalPrice}\VND',style: GoogleFonts.robotoMono(fontSize: 22),);
+
+                                    return Text('Price ${context.read(selectedBooking).state.totalPrice == 0 ? doneServiceViewModel.calculateTotalPrice(servicesSelected) : context.read(selectedBooking).state.totalPrice}\VND',style: GoogleFonts.robotoMono(fontSize: 22),);
                                   },),
                                     context.read(selectedBooking).state.done ? Chip(label: Text('Finished'),) : Container()
 
@@ -121,7 +116,7 @@ class DoneService extends ConsumerWidget{
                     child: Padding(
                       padding: const EdgeInsets.all(8),
                       child: FutureBuilder(
-                      future: getServices(context),
+                      future: doneServiceViewModel.displayServices(context),
                       builder: (context,snapshot){
                         if(snapshot.connectionState == ConnectionState.waiting)
                           return Center(child: CircularProgressIndicator(),);
@@ -131,6 +126,7 @@ class DoneService extends ConsumerWidget{
                             var servicesWatch = watch(selectedServices).state;
                             return SingleChildScrollView(
                               child: Column(children: [
+
                                 ChipsChoice<ServiceModel>.multiple(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     mainAxisAlignment: MainAxisAlignment.start,
@@ -147,12 +143,15 @@ class DoneService extends ConsumerWidget{
                                         label: (index,value) => '${value
                                             .name} (${value.price}')
                                 ),
+
+
+
                                 Container(
                                   width: MediaQuery.of(context).size.width,
                                   child: ElevatedButton(
-                                    onPressed: context.read(selectedBooking).state.done ? null :
+                                    onPressed: doneServiceViewModel.isDone(context) ? null :
                                     servicesWatch.length > 0
-                                        ? () => finishService(context)
+                                        ? () => doneServiceViewModel.finishService(context,scaffoldKey)
                                         : null ,
                                     child: Text('FINISH',style : GoogleFonts.robotoMono()),
                                   ),
@@ -174,36 +173,7 @@ class DoneService extends ConsumerWidget{
         ));
   }
 
-  finishService(BuildContext context) {
-    var batch = FirebaseFirestore.instance.batch();
-    var barberBook = context.read(selectedBooking).state;
 
-    var userBook = FirebaseFirestore.instance
-        .collection('user')
-        .doc('${barberBook.customerPhone}')
-        .collection('Booking_${barberBook.customerId}')
-        .doc('${barberBook.barberId}_${DateFormat('dd_MM_yyyy').format(
-        DateTime.fromMillisecondsSinceEpoch(barberBook.timeStamp))}');
-
-    Map<String,dynamic> updateDone = new Map();
-    updateDone['done'] = true;
-    updateDone['services'] =
-        convertServices(context.read(selectedServices).state);
-    updateDone['totalPrice'] = context.read(selectedServices).state
-    .map((e)=>e.price).fold(0, (previousValue, element) => previousValue + element);
-
-    batch.update(userBook, updateDone);
-    batch.update(barberBook.reference, updateDone);
-
-    batch.commit().then((value) {
-      ScaffoldMessenger.of(scaffoldKey.currentContext)
-          .showSnackBar(SnackBar(content: Text('Process success'))).closed
-          .then((v) => Navigator.of(context).pop());
-
-    });
-
-
-  }
 
 
 

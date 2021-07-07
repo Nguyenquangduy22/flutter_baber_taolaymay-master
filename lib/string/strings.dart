@@ -1,0 +1,16 @@
+final cannotLoadCityText = 'Cannot load city list';
+final barberEmptyText = 'Barber list are empty';
+final thankServicesText = 'Thank you for booking our services !';
+final bookingInformationText = 'Booking Information';
+final titleText = 'Barner Appoiment';
+final doneServiceText = 'Done Service';
+final SelectedCityText = 'Selected City';
+final SelectSalonText = 'Select Salon';
+final YourAppoimentText = 'Your Appoiment ';
+final StaffHomeText = 'Staff Home';
+final cannotLoadSalonList='Cannot load Salon list';
+final fullText = 'Full';
+final NotAvailableText = 'Not Available';
+final AvailableText = 'Available';
+final PreviousText = 'Previous';
+final NextText = 'Next';

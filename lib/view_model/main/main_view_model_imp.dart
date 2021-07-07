@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/src/material/scaffold.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter_baber_taolaymay/ui/components/register_dialog.dart';
+import 'package:flutter_baber_taolaymay/ui/components/user_widgets/register_dialog.dart';
 import 'package:flutter_baber_taolaymay/utils/utils.dart';
 import 'package:flutter_baber_taolaymay/view_model/main/main_viewmodel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
